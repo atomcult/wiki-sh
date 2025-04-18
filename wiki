@@ -35,7 +35,7 @@ OPTIONS:
   --pager, -p PAGER        Open files with PAGER
   --pager-opts OPTS        Pass in options to the pager command
 
-  --preview, -p PREVIEW    Preview files with PREVIEW
+  --preview, -P PREVIEW    Preview files with PREVIEW
   --preview-opts OPTS      Pass in options to the preview command
 
 VALUES:
@@ -66,7 +66,7 @@ parse() {
 				shift 2
 				;;
 			--preview|-P)
-				OPT_WIKI_PAGER="$2"
+				OPT_WIKI_PREVIEW="$2"
 				shift 2
 				;;
 			--preview-opts)
