@@ -11,7 +11,9 @@ uninstall: uninstall-bin uninstall-docs
 
 install-bin:
 	mkdir -p $(PREFIX)/bin
-	install -T -m755 $(PROG) $(PREFIX)/bin/$(TARGET)
+
+	cp $(PROG) $(PREFIX)/bin/$(TARGET)
+	chmod 0755 $(PREFIX)/bin/$(TARGET)
 
 uninstall-bin:
 	rm $(PREFIX)/bin/$(TARGET)
