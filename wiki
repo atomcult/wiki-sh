@@ -1,0 +1,158 @@
+#!/bin/sh
+
+readonly EXIT_SUCCESS=0
+readonly EXIT_FAILURE=1
+
+readonly ENV_OPTS="WIKI_PATH \
+									 WIKI_PAGER \
+									 WIKI_PAGER_OPTS \
+									 WIKI_PREVIEW \
+									 WIKI_PREVIEW_OPTS \
+									 WIKI_GREP_OPTS"
+
+OPT_WIKI_PATH="${WIKI_PATH:-}"
+
+OPT_WIKI_PAGER="${WIKI_PAGER:-hx}"
+OPT_WIKI_PAGER_OPTS="${WIKI_PAGER_OPTS:-}"
+
+OPT_WIKI_PREVIEW="${WIKI_PREVIEW:-batcat}"
+OPT_WIKI_PREVIEW_OPTS="${WIKI_PREVIEW_OPTS:---color=always}"
+
+OPT_WIKI_GREP=""
+OPT_WIKI_GREP_OPTS="${WIKI_GREP_OPTS:--i}"
+
+print_usage() {
+	cat >&2 <<EOF
+USAGE: $(basename "${PROG}") [OPTIONS..] [FILENAME]
+
+OPTIONS:
+  --help, -h               Print usage
+  --path PATH              Specify PATH to look for wikis
+
+  --grep, -g QUERY         Search files for QUERY
+  --grep-opts OPTS         Pass in options to grep
+
+  --pager, -p PAGER        Open files with PAGER
+  --pager-opts OPTS        Pass in options to the pager command
+
+  --preview, -p PREVIEW    Preview files with PREVIEW
+  --preview-opts OPTS      Pass in options to the preview command
+
+VALUES:
+EOF
+
+	for var in $ENV_OPTS; do
+		printf '%18s = "%s"\n' "$var" "$(eval echo "\${OPT_$var:-}")"
+	done
+}
+
+parse() {
+	while [ "$#" -gt 0 ]; do
+		case "${1}" in
+			--help|-h)
+				print_usage
+				exit $EXIT_SUCCESS
+				;;
+			--path)
+				OPT_WIKI_PATH="$2"
+				shift 2
+				;;
+			--pager|-p)
+				OPT_WIKI_PAGER="$2"
+				shift 2
+				;;
+			--pager-opts)
+				OPT_WIKI_PAGER_OPTS="$2"
+				shift 2
+				;;
+			--preview|-P)
+				OPT_WIKI_PAGER="$2"
+				shift 2
+				;;
+			--preview-opts)
+				OPT_WIKI_PREVIEW_OPTS="$2"
+				shift 2
+				;;
+			--grep|-g)
+				OPT_WIKI_GREP="$2"
+				shift 2
+				;;
+			--grep-opts)
+				OPT_WIKI_GREP_OPTS="$2"
+				shift 2
+				;;
+			*)
+				OPT_QUERY="${*}"
+				break
+				;;
+		esac
+	done
+}
+
+check_sanity() {
+	command -v fzf >/dev/null 2>&1 || {
+		echo >&2 "Could not find 'fzf' in your PATH"
+		return $EXIT_FAILURE
+	}
+
+	command -v "${OPT_WIKI_PAGER}" >/dev/null 2>&1 || {
+		echo >&2 "Pager command '${OPT_WIKI_PAGER}' could not be found"
+		return $EXIT_FAILURE
+	}
+
+	command -v "${OPT_WIKI_PREVIEW}" >/dev/null 2>&1 || {
+		echo >&2 "Preview command '${OPT_WIKI_PREVIEW}' could not be found"
+		return $EXIT_FAILURE
+	}
+
+	[ -n "${OPT_WIKI_PATH}" ] || {
+		echo >&2 "No wikis. Please set WIKI_PATH or use --path"
+		return $EXIT_FAILURE
+	}
+
+	[ -n "${OPT_WIKI_PAGER}" ] || {
+		echo >&2 "No wikis. Please set WIKI_PAGER or use --pager"
+		return $EXIT_FAILURE
+	}
+}
+
+find_files() (
+	IFS=":"
+	if [ -n "${OPT_WIKI_GREP}" ]; then
+		for path in ${OPT_WIKI_PATH}; do
+			# shellcheck disable=SC2086
+			find "${path}" -type f -print0 |
+				sed -z '/\/\./d' |
+				xargs -0 grep -l ${OPT_WIKI_GREP_OPTS} "${OPT_WIKI_GREP}"
+		done
+	else
+		for path in ${OPT_WIKI_PATH}; do
+			find "${path}" -type f ! -path '**/.*' -prune
+		done
+	fi
+)
+
+run() {
+	find_files | fzf \
+		--ansi \
+		--select-1 \
+		--preview="${OPT_WIKI_PREVIEW} ${OPT_WIKI_PREVIEW_OPTS} {}" \
+		--query="${OPT_QUERY:-}"
+}
+
+main() {
+	set -eu
+	readonly PROG="${0}"
+
+	parse "$@"
+	check_sanity
+
+	fname="$(run)"
+	[ -n "${fname}" ] ||
+		return $EXIT_SUCCESS
+
+	# shellcheck disable=SC2086
+	"${OPT_WIKI_PAGER}" ${OPT_WIKI_PAGER_OPTS} "${fname}"
+}
+
+main "$@"
