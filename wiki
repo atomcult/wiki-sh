@@ -42,7 +42,7 @@ VALUES:
 EOF
 
 	for var in $ENV_OPTS; do
-		printf '%18s = "%s"\n' "$var" "$(eval echo "\${OPT_$var:-}")"
+		printf '  %-18s = "%s"\n' "$var" "$(eval echo "\${OPT_$var:-}")"
 	done
 }
 
