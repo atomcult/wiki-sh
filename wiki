@@ -29,6 +29,9 @@ OPTIONS:
   --help, -h               Print usage
   --path PATH              Specify PATH to look for wikis
 
+  --new, -n NAME           Create a new entry
+  --inbox, -I PATH         Specify PATH where new entries are created
+
   --grep, -g QUERY         Search files for QUERY
   --grep-opts OPTS         Pass in options to grep
 
@@ -55,6 +58,14 @@ parse() {
 				;;
 			--path)
 				OPT_WIKI_PATH="$2"
+				shift 2
+				;;
+			--new|-n)
+				OPT_WIKI_NEW_FILE="${OPT_WIKI_INBOX}/${2}.md"
+				shift 2
+				;;
+			--inbox|-I)
+				OPT_WIKI_INBOX="$2"
 				shift 2
 				;;
 			--pager|-p)

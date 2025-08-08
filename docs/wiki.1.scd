@@ -19,6 +19,12 @@ contents.
 *--path* _path_
 	Specify path to look for wikis
 
+*--new, -n* _name_
+	Create a new entry
+
+*--inbox, -I* _path_
+	Set the path where new entries are created
+
 *--grep, -g* _query_
 	Search file contents for the specified query
 
