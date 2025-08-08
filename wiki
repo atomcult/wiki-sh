@@ -137,6 +137,10 @@ check_sanity() {
 		return $EXIT_FAILURE
 	}
 
+	[ -d "${OPT_WIKI_PATH}" ] || {
+		echo >&2 "${OPT_WIKI_PATH} does not exist"
+	}
+
 	[ -n "${OPT_WIKI_PAGER_CMD}" ] || {
 		echo >&2 "Please set WIKI_PAGER or use --pager"
 		return $EXIT_FAILURE
@@ -150,19 +154,20 @@ find_files() (
 		# shellcheck disable=SC2086
 		find "${OPT_WIKI_PATH}" -type f -print0 |
 			sed -z '/\/\./d' |
-			xargs -0 grep -l ${OPT_WIKI_GREP_OPTS} "${OPT_WIKI_GREP_QUERY}"
+			xargs -0 grep -l ${OPT_WIKI_GREP_OPTS} "${OPT_WIKI_GREP_QUERY}" |
+			sed "s|${OPT_WIKI_PATH}/||"
 
 	  return $EXIT_SUCCESS
 	}
 
-	find "${OPT_WIKI_PATH}" -type f ! -path '**/.*' -prune
+	find "${OPT_WIKI_PATH}" -type f ! -path '**/.*' -prune -printf '%P\n'
 )
 
 run() {
 	find_files | fzf \
 		--ansi \
 		--select-1 \
-		--preview="${OPT_WIKI_PREVIEW_CMD} ${OPT_WIKI_PREVIEW_OPTS} {}" \
+		--preview="${OPT_WIKI_PREVIEW_CMD} ${OPT_WIKI_PREVIEW_OPTS} ${OPT_WIKI_PATH}/{}" \
 		--query="${OPT_QUERY:-}"
 }
 
@@ -182,6 +187,8 @@ main() {
 
 	[ -n "${fname}" ] ||
 		return $EXIT_SUCCESS
+
+	cd "${OPT_WIKI_PATH}"
 
 	# shellcheck disable=SC2086
 	"${OPT_WIKI_PAGER_CMD}" ${OPT_WIKI_PAGER_OPTS} "${fname}"
