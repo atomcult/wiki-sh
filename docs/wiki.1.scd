@@ -6,11 +6,12 @@ wiki - interrogate plaintext wiki directories
 # SYNOPSIS
 *wiki* -h
 
+*wiki* -V
+
 *wiki* [_options_...] [_query_]
 
 # DESCRIPTION
-*wiki* reads paths in *WIKI_PATH* and allows search of both filenames and file
-contents.
+*wiki* allows search of both filenames and file contents in a wiki directory.
 
 ## OPTIONS
 *--help, -h*
@@ -20,7 +21,7 @@ contents.
 	Print version
 
 *--path* _path_
-	Specify path to look for wikis
+	Specify path to wiki directory
 
 *--new, -n* _name_
 	Create a new entry
@@ -49,11 +50,13 @@ contents.
 # ENVIRONMENT
 *WIKI_PATH*
 
-*WIKI_PAGER*
+*WIKI_INBOX*
+
+*WIKI_PAGER_CMD*
 
 *WIKI_PAGER_OPTS*
 
-*WIKI_PREVIEW*
+*WIKI_PREVIEW_CMD*
 
 *WIKI_PREVIEW_OPTS*
 

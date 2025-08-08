@@ -39,7 +39,7 @@ OPTIONS:
   --help, -h               Print usage
   --version, -V            Print the version
 
-  --path PATH              Specify PATH to look for wikis
+  --path PATH              Specify PATH to wiki directory
 
   --new, -n NAME           Create a new entry
   --inbox, -I PATH         Specify PATH where new entries are created
@@ -147,19 +147,15 @@ find_files() (
 	IFS=":"
 
 	[ -z "${OPT_WIKI_GREP_QUERY}" ] || {
-		for path in ${OPT_WIKI_PATH}; do
-			# shellcheck disable=SC2086
-			find "${path}" -type f -print0 |
-				sed -z '/\/\./d' |
-				xargs -0 grep -l ${OPT_WIKI_GREP_OPTS} "${OPT_WIKI_GREP_QUERY}"
-		done
+		# shellcheck disable=SC2086
+		find "${OPT_WIKI_PATH}" -type f -print0 |
+			sed -z '/\/\./d' |
+			xargs -0 grep -l ${OPT_WIKI_GREP_OPTS} "${OPT_WIKI_GREP_QUERY}"
 
 	  return $EXIT_SUCCESS
 	}
 
-	for path in ${OPT_WIKI_PATH}; do
-		find "${path}" -type f ! -path '**/.*' -prune
-	done
+	find "${OPT_WIKI_PATH}" -type f ! -path '**/.*' -prune
 )
 
 run() {
