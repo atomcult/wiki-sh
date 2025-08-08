@@ -6,21 +6,25 @@ readonly EXIT_SUCCESS=0
 readonly EXIT_FAILURE=1
 
 readonly ENV_OPTS="WIKI_PATH \
-									 WIKI_PAGER \
+									 WIKI_INBOX \
+									 WIKI_PAGER_CMD \
 									 WIKI_PAGER_OPTS \
-									 WIKI_PREVIEW \
+									 WIKI_PREVIEW_CMD \
 									 WIKI_PREVIEW_OPTS \
 									 WIKI_GREP_OPTS"
 
 OPT_WIKI_PATH="${WIKI_PATH:-}"
 
-OPT_WIKI_PAGER="${WIKI_PAGER:-less}"
+OPT_WIKI_INBOX="${WIKI_INBOX:-}"
+OPT_WIKI_NEW_FILE=""
+
+OPT_WIKI_PAGER_CMD="${WIKI_PAGER_CMD:-less}"
 OPT_WIKI_PAGER_OPTS="${WIKI_PAGER_OPTS:-}"
 
-OPT_WIKI_PREVIEW="${WIKI_PREVIEW:-cat}"
+OPT_WIKI_PREVIEW_CMD="${WIKI_PREVIEW_CMD:-cat}"
 OPT_WIKI_PREVIEW_OPTS="${WIKI_PREVIEW_OPTS:-}"
 
-OPT_WIKI_GREP=""
+OPT_WIKI_GREP_QUERY=""
 OPT_WIKI_GREP_OPTS="${WIKI_GREP_OPTS:--i}"
 
 print_version() {
@@ -81,7 +85,7 @@ parse() {
 				shift 2
 				;;
 			--pager|-p)
-				OPT_WIKI_PAGER="$2"
+				OPT_WIKI_PAGER_CMD="$2"
 				shift 2
 				;;
 			--pager-opts)
@@ -89,7 +93,7 @@ parse() {
 				shift 2
 				;;
 			--preview|-P)
-				OPT_WIKI_PREVIEW="$2"
+				OPT_WIKI_PREVIEW_CMD="$2"
 				shift 2
 				;;
 			--preview-opts)
@@ -97,7 +101,7 @@ parse() {
 				shift 2
 				;;
 			--grep|-g)
-				OPT_WIKI_GREP="$2"
+				OPT_WIKI_GREP_QUERY="$2"
 				shift 2
 				;;
 			--grep-opts)
@@ -118,48 +122,51 @@ check_sanity() {
 		return $EXIT_FAILURE
 	}
 
-	command -v "${OPT_WIKI_PAGER}" >/dev/null 2>&1 || {
-		echo >&2 "Pager command '${OPT_WIKI_PAGER}' could not be found"
+	command -v "${OPT_WIKI_PAGER_CMD}" >/dev/null 2>&1 || {
+		echo >&2 "Pager command '${OPT_WIKI_PAGER_CMD}' could not be found"
 		return $EXIT_FAILURE
 	}
 
-	command -v "${OPT_WIKI_PREVIEW}" >/dev/null 2>&1 || {
-		echo >&2 "Preview command '${OPT_WIKI_PREVIEW}' could not be found"
+	command -v "${OPT_WIKI_PREVIEW_CMD}" >/dev/null 2>&1 || {
+		echo >&2 "Preview command '${OPT_WIKI_PREVIEW_CMD}' could not be found"
 		return $EXIT_FAILURE
 	}
 
 	[ -n "${OPT_WIKI_PATH}" ] || {
-		echo >&2 "No wikis. Please set WIKI_PATH or use --path"
+		echo >&2 "Please set WIKI_PATH or use --path"
 		return $EXIT_FAILURE
 	}
 
-	[ -n "${OPT_WIKI_PAGER}" ] || {
-		echo >&2 "No wikis. Please set WIKI_PAGER or use --pager"
+	[ -n "${OPT_WIKI_PAGER_CMD}" ] || {
+		echo >&2 "Please set WIKI_PAGER or use --pager"
 		return $EXIT_FAILURE
 	}
 }
 
 find_files() (
 	IFS=":"
-	if [ -n "${OPT_WIKI_GREP}" ]; then
+
+	[ -z "${OPT_WIKI_GREP_QUERY}" ] || {
 		for path in ${OPT_WIKI_PATH}; do
 			# shellcheck disable=SC2086
 			find "${path}" -type f -print0 |
 				sed -z '/\/\./d' |
-				xargs -0 grep -l ${OPT_WIKI_GREP_OPTS} "${OPT_WIKI_GREP}"
+				xargs -0 grep -l ${OPT_WIKI_GREP_OPTS} "${OPT_WIKI_GREP_QUERY}"
 		done
-	else
-		for path in ${OPT_WIKI_PATH}; do
-			find "${path}" -type f ! -path '**/.*' -prune
-		done
-	fi
+
+	  return $EXIT_SUCCESS
+	}
+
+	for path in ${OPT_WIKI_PATH}; do
+		find "${path}" -type f ! -path '**/.*' -prune
+	done
 )
 
 run() {
 	find_files | fzf \
 		--ansi \
 		--select-1 \
-		--preview="${OPT_WIKI_PREVIEW} ${OPT_WIKI_PREVIEW_OPTS} {}" \
+		--preview="${OPT_WIKI_PREVIEW_CMD} ${OPT_WIKI_PREVIEW_OPTS} {}" \
 		--query="${OPT_QUERY:-}"
 }
 
@@ -170,12 +177,18 @@ main() {
 	parse "$@"
 	check_sanity
 
-	fname="$(run)"
+	# FIXME
+	if [ -n "$OPT_WIKI_NEW_FILE" ]; then
+		fname="$OPT_WIKI_NEW_FILE"
+	else
+		fname="$(run)"
+	fi
+
 	[ -n "${fname}" ] ||
 		return $EXIT_SUCCESS
 
 	# shellcheck disable=SC2086
-	"${OPT_WIKI_PAGER}" ${OPT_WIKI_PAGER_OPTS} "${fname}"
+	"${OPT_WIKI_PAGER_CMD}" ${OPT_WIKI_PAGER_OPTS} "${fname}"
 }
 
 main "$@"
