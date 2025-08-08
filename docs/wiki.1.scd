@@ -16,6 +16,9 @@ contents.
 *--help, -h*
 	Print usage
 
+*--version, -V*
+	Print version
+
 *--path* _path_
 	Specify path to look for wikis
 
