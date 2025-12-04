@@ -247,7 +247,7 @@ main() {
 		if [ -n "$OPT_WIKI_TEMPLATE_PATH" ] && [ -f "$OPT_WIKI_TEMPLATE_PATH" ]; then
 			cp "$OPT_WIKI_TEMPLATE_PATH" "$fname"
 		else
-			>"$fname"
+			true > "$fname"
 		fi
 	else
 		fname="$(run)"
