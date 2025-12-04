@@ -68,6 +68,11 @@ OPTIONS:
   --preview, -P PREVIEW    Preview files with PREVIEW
   --preview-opts OPTS      Pass in options to the preview command
 
+EXAMPLES:
+  wiki -g "my search query"
+  wiki -n "new note title"
+  wiki --path /path/to/another/wiki
+
 VALUES:
 EOF
 
@@ -237,13 +242,12 @@ main() {
 		return $EXIT_SUCCESS
 	}
 
-	# FIXME
 	if [ -n "$OPT_WIKI_NEW_FILE" ]; then
 		fname="$OPT_WIKI_NEW_FILE"
 		if [ -n "$OPT_WIKI_TEMPLATE_PATH" ] && [ -f "$OPT_WIKI_TEMPLATE_PATH" ]; then
-			cat "$OPT_WIKI_TEMPLATE_PATH" > "$fname"
+			cp "$OPT_WIKI_TEMPLATE_PATH" "$fname"
 		else
-			touch "$fname"
+			>"$fname"
 		fi
 	else
 		fname="$(run)"

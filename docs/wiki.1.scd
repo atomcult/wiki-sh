@@ -52,6 +52,8 @@ wiki - interrogate plaintext wiki directories
 
 *WIKI_INBOX*
 
+*WIKI_TEMPLATE_PATH*
+
 *WIKI_PAGER_CMD*
 
 *WIKI_PAGER_OPTS*

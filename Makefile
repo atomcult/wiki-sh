@@ -16,6 +16,9 @@ DESTDIR ?= $(PREFIX)
 install:   install-bin   install-docs
 uninstall: uninstall-bin uninstall-docs
 
+lint:
+	@shellcheck $(PROG)
+
 clean:
 	rm -f docs/*.1
 
