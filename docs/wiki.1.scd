@@ -29,6 +29,9 @@ wiki - interrogate plaintext wiki directories
 *--inbox, -I* _path_
 	Set the path where new entries are created
 
+*--add, -a* _note_
+	Add a quick note to the inbox
+
 *--grep, -g* _query_
 	Search file contents for the specified query
 
@@ -49,9 +52,6 @@ wiki - interrogate plaintext wiki directories
 
 *--preview-opts* _options_
 	Pass in options to the preview command
-
-*--print, -f*
-	Print the selected filename and exit
 
 *--open, -o*
 	Open the wiki directory
