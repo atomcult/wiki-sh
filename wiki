@@ -214,9 +214,7 @@ parse() {
 				exit $EXIT_SUCCESS
 				;;
 			--completions)
-				if [ -z "$2" ]; then
-					error "--completions requires a shell argument (e.g., bash, zsh, fish)"
-				fi
+				[ -n "$2" ] || error "--completions requires a shell argument (e.g., bash, zsh, fish)"
 				print_completions "$2"
 				exit $EXIT_SUCCESS
 				;;
@@ -368,9 +366,7 @@ handle_backlinks() {
 	search_term=$(basename "$target_fname" .md)
 	backlinks=$(find_backlinks "$search_term")
 
-	if [ -z "$backlinks" ]; then
-		error "No backlinks found for '${search_term}'"
-	fi
+	[ -n "$backlinks" ] || error "No backlinks found for '${search_term}'"
 
 	selected_backlink=$(echo "$backlinks" | fzf \
 		--ansi \
