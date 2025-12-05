@@ -52,6 +52,7 @@ OPTIONS:
   General:
     --help, -h               Print usage
     --version, -V            Print the version
+    --completions SHELL      Generate shell completions
 
   File/Directory:
     --path PATH              Specify PATH to wiki directory
@@ -87,6 +88,67 @@ EOF
 	done
 }
 
+print_completions() {
+	case "$1" in
+		bash)
+			cat <<'EOF'
+_wiki_completions() {
+    COMPREPLY=($(compgen -W "--help --version --path --new --inbox --print --open --daily --daily-path --grep --grep-opts --pager --pager-opts --filemgr --filemgr-opts --preview --preview-opts" -- "${COMP_WORDS[1]}"))
+}
+complete -F _wiki_completions wiki
+EOF
+			;;
+		zsh)
+			cat <<'EOF'
+#compdef wiki
+_wiki() {
+    _arguments \
+        '--help[Print usage]' \
+        '--version[Print the version]' \
+        '--path[Specify PATH to wiki directory]:PATH:_path_files -/' \
+        '--new[Create a new entry]:NAME' \
+        '--inbox[Specify PATH where new entries are created]:PATH:_path_files -/' \
+        '--print[Print the selected filename and exit]' \
+        '--open[Open the wiki directory]' \
+        '--daily[Open a daily note]' \
+        '--daily-path[Specify PATH for daily notes]:PATH:_path_files -/' \
+        '--grep[Search files for QUERY]:QUERY' \
+        '--grep-opts[Pass in options to grep]:OPTS' \
+        '--pager[Open files with PAGER]:PAGER' \
+        '--pager-opts[Pass in options to the pager command]:OPTS' \
+        '--filemgr[Open wiki directory with FILEMGR]:FILEMGR' \
+        '--filemgr-opts[Pass in options to the file manager command]:OPTS' \
+        '--preview[Preview files with PREVIEW]:PREVIEW' \
+        '--preview-opts[Pass in options to the preview command]:OPTS'
+}
+_wiki "$@"
+EOF
+			;;
+		fish)
+			cat <<'EOF'
+complete -c wiki -n "not (command -v __fish_complete_directories)" -a "(__fish_complete_directories)"
+complete -c wiki -s h -l help -d "Print usage"
+complete -c wiki -s V -l version -d "Print the version"
+complete -c wiki -l path -d "Specify PATH to wiki directory" -r
+complete -c wiki -s n -l new -d "Create a new entry"
+complete -c wiki -s I -l inbox -d "Specify PATH where new entries are created" -r
+complete -c wiki -s f -l print -d "Print the selected filename and exit"
+complete -c wiki -s o -l open -d "Open the wiki directory"
+complete -c wiki -s d -l daily -d "Open a daily note"
+complete -c wiki -l daily-path -d "Specify PATH for daily notes" -r
+complete -c wiki -s g -l grep -d "Search files for QUERY"
+complete -c wiki -l grep-opts -d "Pass in options to grep"
+complete -c wiki -s p -l pager -d "Open files with PAGER"
+complete -c wiki -l pager-opts -d "Pass in options to the pager command"
+complete -c wiki -s F -l filemgr -d "Open wiki directory with FILEMGR"
+complete -c wiki -l filemgr-opts -d "Pass in options to the file manager command"
+complete -c wiki -s P -l preview -d "Preview files with PREVIEW"
+complete -c wiki -l preview-opts -d "Pass in options to the preview command"
+EOF
+			;;
+	esac
+}
+
 parse() {
 	while [ "$#" -gt 0 ]; do
 		case "${1}" in
@@ -96,6 +158,10 @@ parse() {
 				;;
 			--version|-V)
 				print_version
+				exit $EXIT_SUCCESS
+				;;
+			--completions)
+				print_completions "$2"
 				exit $EXIT_SUCCESS
 				;;
 			--path)
