@@ -302,10 +302,8 @@ find_files() (
 	IFS=":"
 
 	[ -z "${OPT_WIKI_GREP_QUERY}" ] || {
-		# shellcheck disable=SC2086
-		find "${OPT_WIKI_PATH}" -type f -print0 |
-			sed -z '/\/\./d' |
-			xargs -0 grep -l ${OPT_WIKI_GREP_OPTS} "${OPT_WIKI_GREP_QUERY}" |
+		grep -Rl ${OPT_WIKI_GREP_OPTS} "${OPT_WIKI_GREP_QUERY}" \
+			"${OPT_WIKI_PATH}" |
 			sed "s|${OPT_WIKI_PATH}/||"
 
 	  return $EXIT_SUCCESS
@@ -339,17 +337,15 @@ main() {
 
 	parse "$@"
 
-	if [ -n "$OPT_DEBUG" ]; then
+	[ -z "$OPT_DEBUG" ] ||
 		set -x
-	fi
 
 	check_sanity
 
 	[ -z "$OPT_WIKI_OPEN" ] || {
 		"${OPT_WIKI_FILEMGR_CMD}" \
 			"${OPT_WIKI_FILEMGR_OPTS}" \
-			"${OPT_WI
-			KI_PATH}"
+			"${OPT_WIKI_PATH}"
 
 		return $EXIT_SUCCESS
 	}
@@ -369,7 +365,6 @@ main() {
 
 		selected_backlink=$(echo "$backlinks" | fzf \
 			--ansi \
-
 			--select-1 \
 			--preview="${OPT_WIKI_PREVIEW_CMD} ${OPT_WIKI_PREVIEW_OPTS} ${OPT_WIKI_PATH}/{}" \
 			--query="${OPT_QUERY:-}")
