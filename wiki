@@ -153,6 +153,31 @@ EOF
 }
 
 parse() {
+	new_args=""
+	for arg in "$@"; do
+		case "$arg" in
+			-??*) # Matches - followed by at least two characters
+				rest=$(echo "$arg" | cut -c 2-)
+				for i in $(seq 1 ${#rest}); do
+					char=$(echo "$rest" | cut -c "$i")
+					case "$char" in
+						n|I|a|p|P|F|g)
+							echo >&2 "Option -$char requires an argument and cannot be combined."
+							exit $EXIT_FAILURE
+							;;
+						*)
+							new_args="$new_args -$char"
+							;;
+					esac
+				done
+				;;
+			*)
+				new_args="$new_args \"$arg\""
+				;;
+		esac
+	done
+	eval set -- "$new_args"
+
 	while [ "$#" -gt 0 ]; do
 		case "${1}" in
 			--help|-h)
