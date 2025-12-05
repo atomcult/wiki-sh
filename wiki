@@ -1,6 +1,6 @@
 #!/bin/sh
 
-readonly VERSION="25.08"
+readonly VERSION="25.12"
 
 readonly EXIT_SUCCESS=0
 readonly EXIT_FAILURE=1
