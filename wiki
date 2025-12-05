@@ -331,106 +331,102 @@ run() {
 		--query="${OPT_QUERY:-}"
 }
 
+handle_open() {
+	"${OPT_WIKI_FILEMGR_CMD}" \
+		"${OPT_WIKI_FILEMGR_OPTS}" \
+		"${OPT_WIKI_PATH}"
+}
+
+handle_backlinks() {
+	target_fname=$(run)
+
+	[ -z "$target_fname" ] && return $EXIT_SUCCESS
+
+	search_term=$(basename "$target_fname" .md)
+	backlinks=$(find_backlinks "$search_term")
+
+	if [ -z "$backlinks" ]; then
+		echo >&2 "No backlinks found for '${search_term}'"
+		return $EXIT_FAILURE
+	fi
+
+	selected_backlink=$(echo "$backlinks" | fzf \
+		--ansi \
+		--select-1 \
+		--preview="${OPT_WIKI_PREVIEW_CMD} ${OPT_WIKI_PREVIEW_OPTS} ${OPT_WIKI_PATH}/{}" \
+		--query="${OPT_QUERY:-}")
+
+	[ -z "$selected_backlink" ] && return $EXIT_SUCCESS
+
+	fname="$selected_backlink"
+	open_file "$fname"
+}
+
+handle_daily() {
+	# Format: <year>/<month>/<date>-<weekday>.md
+	# Example: 2025/12/05-Friday.md
+	year="$(date +%Y)"
+	month="$(date +%m)"
+	date_weekday="$(date +%d-%A)"
+	
+	# Construct the full filename including the directory structure
+	fname="${year}/${month}/${date_weekday}.md"
+
+	wiki_root="$(echo "${OPT_WIKI_PATH}" | cut -d: -f1)"
+
+	case "${OPT_WIKI_DAILY_PATH}" in
+		/*) daily_path="${OPT_WIKI_DAILY_PATH}" ;;
+		*) daily_path="${wiki_root}/${OPT_WIKI_DAILY_PATH}" ;;
+	esac
+
+	# Create the full directory path if it doesn't exist
+	[ -d "${daily_path}/${year}/${month}" ] || mkdir -p "${daily_path}/${year}/${month}"
+	
+	cd "${daily_path}/${year}/${month}"
+
+	# shellcheck disable=SC2086
+	"${OPT_WIKI_PAGER_CMD}" ${OPT_WIKI_PAGER_OPTS} "${date_weekday}.md"
+}
+
+handle_new() {
+	case "${OPT_WIKI_INBOX}" in
+		/*) inbox_path="${OPT_WIKI_INBOX}" ;;
+		*) inbox_path="${OPT_WIKI_PATH}/${OPT_WIKI_INBOX}" ;;
+	esac
+
+	fname="${inbox_path}/${OPT_WIKI_NEW_NAME}.md"
+
+	if [ -n "$OPT_WIKI_TEMPLATE_PATH" ] && [ -f "$OPT_WIKI_TEMPLATE_PATH" ]; then
+		cp "$OPT_WIKI_TEMPLATE_PATH" "$fname"
+	else
+		true > "$fname"
+	fi
+
+	open_file "$fname"
+}
+
 main() {
 	set -eu
 	readonly PROG="${0}"
 
 	parse "$@"
 
-	[ -z "$OPT_DEBUG" ] ||
-		set -x
+	[ -z "$OPT_DEBUG" ] || set -x
 
 	check_sanity
 
-	[ -z "$OPT_WIKI_OPEN" ] || {
-		"${OPT_WIKI_FILEMGR_CMD}" \
-			"${OPT_WIKI_FILEMGR_OPTS}" \
-			"${OPT_WIKI_PATH}"
-
-		return $EXIT_SUCCESS
-	}
-
-	if [ -n "$OPT_WIKI_BACKLINKS" ]; then
-		target_fname=$(run)
-
-		[ -z "$target_fname" ] && return $EXIT_SUCCESS
-
-		search_term=$(basename "$target_fname" .md)
-		backlinks=$(find_backlinks "$search_term")
-
-		if [ -z "$backlinks" ]; then
-			echo >&2 "No backlinks found for '${search_term}'"
-			return $EXIT_FAILURE
-		fi
-
-		selected_backlink=$(echo "$backlinks" | fzf \
-			--ansi \
-			--select-1 \
-			--preview="${OPT_WIKI_PREVIEW_CMD} ${OPT_WIKI_PREVIEW_OPTS} ${OPT_WIKI_PATH}/{}" \
-			--query="${OPT_QUERY:-}")
-
-		[ -z "$selected_backlink" ] && return $EXIT_SUCCESS
-
-		fname="$selected_backlink"
+	if [ -n "$OPT_WIKI_OPEN" ]; then
+		handle_open
+	elif [ -n "$OPT_WIKI_BACKLINKS" ]; then
+		handle_backlinks
+	elif [ -n "$OPT_WIKI_DAILY" ]; then
+		handle_daily
+	elif [ -n "$OPT_WIKI_NEW_NAME" ]; then
+		handle_new
 	else
-
-	if [ -n "$OPT_WIKI_DAILY" ]; then
-		# Format: <year>/<month>/<date>-<weekday>.md
-		# Example: 2025/12/05-Friday.md
-		year="$(date +%Y)"
-		month="$(date +%m)"
-		date_weekday="$(date +%d-%A)"
-		
-		# Construct the full filename including the directory structure
-		fname="${year}/${month}/${date_weekday}.md"
-
-		wiki_root="$(echo "${OPT_WIKI_PATH}" | cut -d: -f1)"
-
-		case "${OPT_WIKI_DAILY_PATH}" in
-			/*) daily_path="${OPT_WIKI_DAILY_PATH}" ;;
-			*) daily_path="${wiki_root}/${OPT_WIKI_DAILY_PATH}" ;;
-		esac
-
-		# Create the full directory path if it doesn't exist
-		[ -d "${daily_path}/${year}/${month}" ] || mkdir -p "${daily_path}/${year}/${month}"
-		
-		cd "${daily_path}/${year}/${month}"
-
-		# shellcheck disable=SC2086
-		"${OPT_WIKI_PAGER_CMD}" ${OPT_WIKI_PAGER_OPTS} "${date_weekday}.md"
-		return $EXIT_SUCCESS
+		fname=$(run)
+		[ -n "$fname" ] && open_file "$fname"
 	fi
-
-	if [ -n "$OPT_WIKI_NEW_NAME" ]; then
-		case "${OPT_WIKI_INBOX}" in
-			/*) inbox_path="${OPT_WIKI_INBOX}" ;;
-			*) inbox_path="${OPT_WIKI_PATH}/${OPT_WIKI_INBOX}" ;;
-		esac
-
-		fname="${inbox_path}/${OPT_WIKI_NEW_NAME}.md"
-
-		if [ -n "$OPT_WIKI_TEMPLATE_PATH" ] && [ -f "$OPT_WIKI_TEMPLATE_PATH" ]; then
-			cp "$OPT_WIKI_TEMPLATE_PATH" "$fname"
-		else
-			true > "$fname"
-		fi
-	else
-		fname="$(run)"
-	fi
-	fi
-
-	[ -n "${fname}" ] ||
-		return $EXIT_SUCCESS
-
-	[ -z "${OPT_WIKI_PRINT_FNAME}" ] || {
-		echo "${OPT_WIKI_PATH}/${fname}"
-		return $EXIT_SUCCESS
-	}
-
-	cd "${OPT_WIKI_PATH}"
-
-	# shellcheck disable=SC2086
-	"${OPT_WIKI_PAGER_CMD}" ${OPT_WIKI_PAGER_OPTS} "${fname}"
 }
 
 main "$@"
