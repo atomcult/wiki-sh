@@ -43,7 +43,15 @@ OPT_WIKI_GREP_QUERY=""
 OPT_WIKI_GREP_OPTS="${WIKI_GREP_OPTS:--i}"
 
 print_version() {
-	echo >&2 "wiki ${VERSION}"
+	cat >&2 <<EOF
+wiki ${VERSION}
+Copyright (C) $(date +%Y) Lauren S. Brock
+License MIT <https://github.com/atomcult/wiki-sh/blob/main/LICENSE>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Lauren S. Brock
+EOF
 }
 
 print_usage() {
