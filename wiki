@@ -25,6 +25,7 @@ OPT_WIKI_DAILY=""
 OPT_WIKI_TEMPLATE_PATH="${WIKI_TEMPLATE_PATH:-}"
 OPT_WIKI_NEW_NAME=""
 OPT_WIKI_BACKLINKS=""
+OPT_WIKI_ADD=""
 OPT_DEBUG=""
 
 OPT_WIKI_PRINT_FNAME=""
@@ -65,6 +66,7 @@ OPTIONS:
     --open, -o               Open the wiki directory
     --daily, -d              Open a daily note
     --daily-path PATH        Specify PATH for daily notes
+    --add, -a NOTE           Add a quick note to the inbox
 
   Search:
     --grep, -g QUERY         Search files for QUERY
@@ -189,6 +191,10 @@ parse() {
 				;;
 			--daily-path)
 				OPT_WIKI_DAILY_PATH="$2"
+				shift 2
+				;;
+			--add|-a)
+				OPT_WIKI_ADD="$2"
 				shift 2
 				;;
 			--print|-f)
@@ -405,6 +411,22 @@ handle_new() {
 	open_file "$fname"
 }
 
+handle_add() {
+	case "${OPT_WIKI_INBOX}" in
+		/*) inbox_path="${OPT_WIKI_INBOX}" ;;
+		*) inbox_path="${OPT_WIKI_PATH}/${OPT_WIKI_INBOX}" ;;
+	esac
+
+	fname="${inbox_path}/inbox.md"
+
+	{
+		echo "---"
+		echo "Added: $(date)"
+		echo ""
+		echo "${OPT_WIKI_ADD}"
+	} >> "$fname"
+}
+
 main() {
 	set -eu
 	readonly PROG="${0}"
@@ -417,6 +439,8 @@ main() {
 
 	if [ -n "$OPT_WIKI_OPEN" ]; then
 		handle_open
+	elif [ -n "$OPT_WIKI_ADD" ]; then
+		handle_add
 	elif [ -n "$OPT_WIKI_BACKLINKS" ]; then
 		handle_backlinks
 	elif [ -n "$OPT_WIKI_DAILY" ]; then
