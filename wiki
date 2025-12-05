@@ -158,6 +158,11 @@ print_completions() {
 	esac
 }
 
+error() {
+	echo >&2 "ERROR: $*"
+	exit $EXIT_FAILURE
+}
+
 _preprocess_args() {
 	new_args=""
 	for arg in "$@"; do
@@ -171,8 +176,7 @@ _preprocess_args() {
 					char=$(echo "$rest" | cut -c "$i")
 					case "$char" in
 						n|I|a|p|P|F|g)
-							echo >&2 "Option -$char requires an argument and cannot be combined."
-							exit $EXIT_FAILURE
+							error "Option -$char requires an argument and cannot be combined."
 							;;
 						*)
 							new_args="$new_args -$char"
@@ -203,8 +207,7 @@ parse() {
 				;;
 			--completions)
 				if [ -z "$2" ]; then
-					echo >&2 "ERROR: --completions requires a shell argument (e.g., bash, zsh, fish)"
-					exit $EXIT_FAILURE
+					error "--completions requires a shell argument (e.g., bash, zsh, fish)"
 				fi
 				print_completions "$2"
 				exit $EXIT_SUCCESS
@@ -287,53 +290,27 @@ parse() {
 
 check_sanity() {
 	# Ensure wiki path is set and exists
-	[ -n "${OPT_WIKI_PATH}" ] || {
-		echo >&2 "Please set WIKI_PATH or use --path"
-		return $EXIT_FAILURE
-	}
+	[ -n "${OPT_WIKI_PATH}" ] || error "Please set WIKI_PATH or use --path"
 
-	[ -d "${OPT_WIKI_PATH}" ] || {
-		echo >&2 "${OPT_WIKI_PATH} does not exist"
-	}
+	[ -d "${OPT_WIKI_PATH}" ] || error "${OPT_WIKI_PATH} does not exist"
 
 	# Ensure fzf exists
-	command -v fzf >/dev/null 2>&1 || {
-		echo >&2 "Could not find 'fzf' in your PATH"
-		return $EXIT_FAILURE
-	}
+	command -v fzf >/dev/null 2>&1 || error "Could not find 'fzf' in your PATH"
 
 	# Ensure pager is set and exists
-	[ -n "${OPT_WIKI_PAGER_CMD}" ] || {
-		echo >&2 "Please set WIKI_PAGER_CMD or use --pager"
-		return $EXIT_FAILURE
-	}
+	[ -n "${OPT_WIKI_PAGER_CMD}" ] || error "Please set WIKI_PAGER_CMD or use --pager"
 
-	command -v "${OPT_WIKI_PAGER_CMD}" >/dev/null 2>&1 || {
-		echo >&2 "Pager command '${OPT_WIKI_PAGER_CMD}' could not be found"
-		return $EXIT_FAILURE
-	}
+	command -v "${OPT_WIKI_PAGER_CMD}" >/dev/null 2>&1 || error "Pager command '${OPT_WIKI_PAGER_CMD}' could not be found"
 
 	# Ensure preview command is set and exists
-	[ -n "${OPT_WIKI_PREVIEW_CMD}" ] || {
-		echo >&2 "Please set WIKI_PREVIEW_CMD or use --preview"
-		return $EXIT_FAILURE
-	}
+	[ -n "${OPT_WIKI_PREVIEW_CMD}" ] || error "Please set WIKI_PREVIEW_CMD or use --preview"
 
-	command -v "${OPT_WIKI_PREVIEW_CMD}" >/dev/null 2>&1 || {
-		echo >&2 "Preview command '${OPT_WIKI_PREVIEW_CMD}' could not be found"
-		return $EXIT_FAILURE
-	}
+	command -v "${OPT_WIKI_PREVIEW_CMD}" >/dev/null 2>&1 || error "Preview command '${OPT_WIKI_PREVIEW_CMD}' could not be found"
 
 	# Ensure file manager is set and exists
-	[ -n "${OPT_WIKI_FILEMGR_CMD}" ] || {
-		echo >&2 "Please set WIKI_FILEMGR_CMD or use --filemgr"
-		return $EXIT_FAILURE
-	}
+	[ -n "${OPT_WIKI_FILEMGR_CMD}" ] || error "Please set WIKI_FILEMGR_CMD or use --filemgr"
 
-	command -v "${OPT_WIKI_FILEMGR_CMD}" >/dev/null 2>&1 || {
-		echo >&2 "File manager command '${OPT_WIKI_FILEMGR_CMD}' could not be found"
-		return $EXIT_FAILURE
-	}
+	command -v "${OPT_WIKI_FILEMGR_CMD}" >/dev/null 2>&1 || error "File manager command '${OPT_WIKI_FILEMGR_CMD}' could not be found"
 }
 
 find_files() (
@@ -384,8 +361,7 @@ handle_backlinks() {
 	backlinks=$(find_backlinks "$search_term")
 
 	if [ -z "$backlinks" ]; then
-		echo >&2 "No backlinks found for '${search_term}'"
-		return $EXIT_FAILURE
+		error "No backlinks found for '${search_term}'"
 	fi
 
 	selected_backlink=$(echo "$backlinks" | fzf \
