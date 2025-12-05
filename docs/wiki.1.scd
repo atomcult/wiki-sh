@@ -47,6 +47,18 @@ wiki - interrogate plaintext wiki directories
 *--preview-opts* _options_
 	Pass in options to the preview command
 
+*--print, -f*
+	Print the selected filename and exit
+
+*--open, -o*
+	Open the wiki directory
+
+*--filemgr, -F* _command_
+	Open the wiki directory with the specified command
+
+*--filemgr-opts* _options_
+	Pass in options to the filemgr command
+
 # ENVIRONMENT
 *WIKI_PATH*
 
@@ -61,6 +73,10 @@ wiki - interrogate plaintext wiki directories
 *WIKI_PREVIEW_CMD*
 
 *WIKI_PREVIEW_OPTS*
+
+*WIKI_FILEMGR_CMD*
+
+*WIKI_FILEMGR_OPTS*
 
 *WIKI_GREP_OPTS*
 

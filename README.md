@@ -12,6 +12,11 @@ export WIKI_PAGER_OPTS=""
 export WIKI_PREVIEW="bat"
 export WIKI_PREVIEW_OPTS="--color=always"
 
+# Customize the command used to open the wiki directory
+export WIKI_FILEMGR="tree"
+export WIKI_FILEMGR_OPTS=""
+
+
 # Add default arguments to grep when searching files
 export WIKI_GREP_OPTS="-i"
 
