@@ -257,7 +257,15 @@ main() {
 	}
 
 	if [ -n "$OPT_WIKI_DAILY" ]; then
-		fname="$(date +%F).md"
+		# Format: <year>/<month>/<date>-<weekday>.md
+		# Example: 2025/12/05-Friday.md
+		year="$(date +%Y)"
+		month="$(date +%m)"
+		date_weekday="$(date +%d-%A)"
+		
+		# Construct the full filename including the directory structure
+		fname="${year}/${month}/${date_weekday}.md"
+
 		wiki_root="$(echo "${OPT_WIKI_PATH}" | cut -d: -f1)"
 
 		case "${OPT_WIKI_DAILY_PATH}" in
@@ -265,11 +273,13 @@ main() {
 			*) daily_path="${wiki_root}/${OPT_WIKI_DAILY_PATH}" ;;
 		esac
 
-		[ -d "$daily_path" ] || mkdir -p "$daily_path"
-		cd "$daily_path"
+		# Create the full directory path if it doesn't exist
+		[ -d "${daily_path}/${year}/${month}" ] || mkdir -p "${daily_path}/${year}/${month}"
+		
+		cd "${daily_path}/${year}/${month}"
 
 		# shellcheck disable=SC2086
-		"${OPT_WIKI_PAGER_CMD}" ${OPT_WIKI_PAGER_OPTS} "${fname}"
+		"${OPT_WIKI_PAGER_CMD}" ${OPT_WIKI_PAGER_OPTS} "${date_weekday}.md"
 		return $EXIT_SUCCESS
 	fi
 
