@@ -156,6 +156,9 @@ parse() {
 	new_args=""
 	for arg in "$@"; do
 		case "$arg" in
+			--*)
+				new_args="$new_args \"$arg\""
+				;;
 			-??*) # Matches - followed by at least two characters
 				rest=$(echo "$arg" | cut -c 2-)
 				for i in $(seq 1 ${#rest}); do
