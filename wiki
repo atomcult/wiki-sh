@@ -46,11 +46,6 @@ print_version() {
 	cat >&2 <<EOF
 wiki ${VERSION}
 Copyright (C) $(date +%Y) Lauren S. Brock
-License MIT <https://github.com/atomcult/wiki-sh/blob/main/LICENSE>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
-
-Written by Lauren S. Brock
 EOF
 }
 
@@ -214,7 +209,8 @@ parse() {
 				exit $EXIT_SUCCESS
 				;;
 			--completions)
-				[ -n "$2" ] || error "--completions requires a shell argument (e.g., bash, zsh, fish)"
+				[ -n "$2" ] ||
+				  error "--completions requires a shell argument (e.g., bash, zsh, fish)"
 				print_completions "$2"
 				exit $EXIT_SUCCESS
 				;;
@@ -296,27 +292,36 @@ parse() {
 
 check_sanity() {
 	# Ensure wiki path is set and exists
-	[ -n "${OPT_WIKI_PATH}" ] || error "Please set WIKI_PATH or use --path"
+	[ -n "${OPT_WIKI_PATH}" ] ||
+		error "Please set WIKI_PATH or use --path"
 
-	[ -d "${OPT_WIKI_PATH}" ] || error "${OPT_WIKI_PATH} does not exist"
+	[ -d "${OPT_WIKI_PATH}" ] ||
+		error "${OPT_WIKI_PATH} does not exist"
 
 	# Ensure fzf exists
-	command -v fzf >/dev/null 2>&1 || error "Could not find 'fzf' in your PATH"
+	command -v fzf >/dev/null 2>&1 ||
+		error "Could not find 'fzf' in your PATH"
 
 	# Ensure pager is set and exists
-	[ -n "${OPT_WIKI_PAGER_CMD}" ] || error "Please set WIKI_PAGER_CMD or use --pager"
+	[ -n "${OPT_WIKI_PAGER_CMD}" ] ||
+		error "Please set WIKI_PAGER_CMD or use --pager"
 
-	command -v "${OPT_WIKI_PAGER_CMD}" >/dev/null 2>&1 || error "Pager command '${OPT_WIKI_PAGER_CMD}' could not be found"
+	command -v "${OPT_WIKI_PAGER_CMD}" >/dev/null 2>&1 ||
+		error "Pager command '${OPT_WIKI_PAGER_CMD}' could not be found"
 
 	# Ensure preview command is set and exists
-	[ -n "${OPT_WIKI_PREVIEW_CMD}" ] || error "Please set WIKI_PREVIEW_CMD or use --preview"
+	[ -n "${OPT_WIKI_PREVIEW_CMD}" ] ||
+		error "Please set WIKI_PREVIEW_CMD or use --preview"
 
-	command -v "${OPT_WIKI_PREVIEW_CMD}" >/dev/null 2>&1 || error "Preview command '${OPT_WIKI_PREVIEW_CMD}' could not be found"
+	command -v "${OPT_WIKI_PREVIEW_CMD}" >/dev/null 2>&1 ||
+		error "Preview command '${OPT_WIKI_PREVIEW_CMD}' could not be found"
 
 	# Ensure file manager is set and exists
-	[ -n "${OPT_WIKI_FILEMGR_CMD}" ] || error "Please set WIKI_FILEMGR_CMD or use --filemgr"
+	[ -n "${OPT_WIKI_FILEMGR_CMD}" ] ||
+		error "Please set WIKI_FILEMGR_CMD or use --filemgr"
 
-	command -v "${OPT_WIKI_FILEMGR_CMD}" >/dev/null 2>&1 || error "File manager command '${OPT_WIKI_FILEMGR_CMD}' could not be found"
+	command -v "${OPT_WIKI_FILEMGR_CMD}" >/dev/null 2>&1 ||
+		error "File manager command '${OPT_WIKI_FILEMGR_CMD}' could not be found"
 }
 
 find_files() (
@@ -366,7 +371,8 @@ handle_backlinks() {
 	search_term=$(basename "$target_fname" .md)
 	backlinks=$(find_backlinks "$search_term")
 
-	[ -n "$backlinks" ] || error "No backlinks found for '${search_term}'"
+	[ -n "$backlinks" ] ||
+	  error "No backlinks found for '${search_term}'"
 
 	selected_backlink=$(echo "$backlinks" | fzf \
 		--ansi \
@@ -398,7 +404,8 @@ handle_daily() {
 	esac
 
 	# Create the full directory path if it doesn't exist
-	[ -d "${daily_path}/${year}/${month}" ] || mkdir -p "${daily_path}/${year}/${month}"
+	[ -d "${daily_path}/${year}/${month}" ] ||
+	  mkdir -p "${daily_path}/${year}/${month}"
 	
 	cd "${daily_path}/${year}/${month}"
 
