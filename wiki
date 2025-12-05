@@ -459,6 +459,12 @@ handle_add() {
 	} >> "$fname"
 }
 
+open_file() {
+	wiki_root="$(echo "${OPT_WIKI_PATH}" | cut -d: -f1)"
+	# shellcheck disable=SC2086
+	"${OPT_WIKI_PAGER_CMD}" ${OPT_WIKI_PAGER_OPTS} "${wiki_root}/${1}"
+}
+
 main() {
 	set -eu
 	readonly PROG="${0}"
