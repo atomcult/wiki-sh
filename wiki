@@ -28,7 +28,6 @@ OPT_WIKI_BACKLINKS=""
 OPT_WIKI_ADD=""
 OPT_DEBUG=""
 
-OPT_WIKI_PRINT_FNAME=""
 OPT_WIKI_OPEN=""
 
 OPT_WIKI_PAGER_CMD="${WIKI_PAGER_CMD:-less}"
@@ -62,7 +61,6 @@ OPTIONS:
     --path PATH              Specify PATH to wiki directory
     --new, -n NAME           Create a new entry
     --inbox, -I PATH         Specify PATH where new entries are created
-    --print, -f              Print the selected filename and exit
     --open, -o               Open the wiki directory
     --daily, -d              Open a daily note
     --daily-path PATH        Specify PATH for daily notes
@@ -197,10 +195,6 @@ parse() {
 				OPT_WIKI_ADD="$2"
 				shift 2
 				;;
-			--print|-f)
-				OPT_WIKI_PRINT_FNAME=1
-				shift
-				;;
 			--open|-o)
 				OPT_WIKI_OPEN=1
 				shift
@@ -308,7 +302,7 @@ find_files() (
 	IFS=":"
 
 	[ -z "${OPT_WIKI_GREP_QUERY}" ] || {
-		grep -Rl ${OPT_WIKI_GREP_OPTS} "${OPT_WIKI_GREP_QUERY}" \
+		grep -Rl "${OPT_WIKI_GREP_OPTS}" "${OPT_WIKI_GREP_QUERY}" \
 			"${OPT_WIKI_PATH}" |
 			sed "s|${OPT_WIKI_PATH}/||"
 
