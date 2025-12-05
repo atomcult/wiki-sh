@@ -20,7 +20,7 @@ OPT_WIKI_PATH="${WIKI_PATH:-}"
 
 OPT_WIKI_INBOX="${WIKI_INBOX:-}"
 OPT_WIKI_TEMPLATE_PATH="${WIKI_TEMPLATE_PATH:-}"
-OPT_WIKI_NEW_FILE=""
+OPT_WIKI_NEW_NAME=""
 
 OPT_WIKI_PRINT_FNAME=""
 OPT_WIKI_OPEN=""
@@ -98,7 +98,7 @@ parse() {
 				shift 2
 				;;
 			--new|-n)
-				OPT_WIKI_NEW_FILE="${OPT_WIKI_INBOX}/${2}.md"
+				OPT_WIKI_NEW_NAME="${2}"
 				shift 2
 				;;
 			--inbox|-I)
@@ -243,8 +243,14 @@ main() {
 		return $EXIT_SUCCESS
 	}
 
-	if [ -n "$OPT_WIKI_NEW_FILE" ]; then
-		fname="$OPT_WIKI_NEW_FILE"
+	if [ -n "$OPT_WIKI_NEW_NAME" ]; then
+		case "${OPT_WIKI_INBOX}" in
+			/*) inbox_path="${OPT_WIKI_INBOX}" ;;
+			*) inbox_path="${OPT_WIKI_PATH}/${OPT_WIKI_INBOX}" ;;
+		esac
+
+		fname="${inbox_path}/${OPT_WIKI_NEW_NAME}.md"
+
 		if [ -n "$OPT_WIKI_TEMPLATE_PATH" ] && [ -f "$OPT_WIKI_TEMPLATE_PATH" ]; then
 			cp "$OPT_WIKI_TEMPLATE_PATH" "$fname"
 		else
