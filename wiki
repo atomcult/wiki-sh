@@ -92,18 +92,17 @@ EOF
 	done
 }
 
-print_completions() {
-	case "$1" in
-		bash)
-			cat <<'EOF'
+_print_bash_completions() {
+	cat <<'EOF'
 _wiki_completions() {
     COMPREPLY=($(compgen -W "--help --version --path --new --inbox --print --open --daily --daily-path --grep --grep-opts --pager --pager-opts --filemgr --filemgr-opts --preview --preview-opts" -- "${COMP_WORDS[1]}"))
 }
 complete -F _wiki_completions wiki
 EOF
-			;;
-		zsh)
-			cat <<'EOF'
+}
+
+_print_zsh_completions() {
+	cat <<'EOF'
 #compdef wiki
 _wiki() {
     _arguments \
@@ -127,9 +126,10 @@ _wiki() {
 }
 _wiki "$@"
 EOF
-			;;
-		fish)
-			cat <<'EOF'
+}
+
+_print_fish_completions() {
+	cat <<'EOF'
 complete -c wiki -s h -l help -d "Print usage"
 complete -c wiki -s V -l version -d "Print the version"
 complete -c wiki -l path -d "Specify PATH to wiki directory" -r
@@ -148,11 +148,17 @@ complete -c wiki -l filemgr-opts -d "Pass in options to the file manager command
 complete -c wiki -s P -l preview -d "Preview files with PREVIEW"
 complete -c wiki -l preview-opts -d "Pass in options to the preview command"
 EOF
-			;;
+}
+
+print_completions() {
+	case "$1" in
+		bash) _print_bash_completions ;;
+		zsh) _print_zsh_completions ;;
+		fish) _print_fish_completions ;;
 	esac
 }
 
-parse() {
+_preprocess_args() {
 	new_args=""
 	for arg in "$@"; do
 		case "$arg" in
@@ -179,7 +185,11 @@ parse() {
 				;;
 		esac
 	done
-	eval set -- "$new_args"
+	echo "$new_args"
+}
+
+parse() {
+	eval set -- "$(_preprocess_args "$@")"
 
 	while [ "$#" -gt 0 ]; do
 		case "${1}" in
