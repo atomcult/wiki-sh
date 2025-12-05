@@ -25,6 +25,7 @@ OPT_WIKI_DAILY=""
 OPT_WIKI_TEMPLATE_PATH="${WIKI_TEMPLATE_PATH:-}"
 OPT_WIKI_NEW_NAME=""
 OPT_WIKI_BACKLINKS=""
+OPT_DEBUG=""
 
 OPT_WIKI_PRINT_FNAME=""
 OPT_WIKI_OPEN=""
@@ -54,6 +55,7 @@ OPTIONS:
     --help, -h               Print usage
     --version, -V            Print the version
     --completions SHELL      Generate shell completions
+    --debug, -D              Enable debug mode
 
   File/Directory:
     --path PATH              Specify PATH to wiki directory
@@ -233,6 +235,10 @@ parse() {
 				OPT_WIKI_BACKLINKS=1
 				shift
 				;;
+			--debug|-D)
+				OPT_DEBUG=1
+				shift
+				;;
 			*)
 				OPT_QUERY="${*}"
 				break
@@ -332,6 +338,11 @@ main() {
 	readonly PROG="${0}"
 
 	parse "$@"
+
+	if [ -n "$OPT_DEBUG" ]; then
+		set -x
+	fi
+
 	check_sanity
 
 	[ -z "$OPT_WIKI_OPEN" ] || {
