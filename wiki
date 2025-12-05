@@ -126,7 +126,6 @@ EOF
 			;;
 		fish)
 			cat <<'EOF'
-complete -c wiki -n "not (command -v __fish_complete_directories)" -a "(__fish_complete_directories)"
 complete -c wiki -s h -l help -d "Print usage"
 complete -c wiki -s V -l version -d "Print the version"
 complete -c wiki -l path -d "Specify PATH to wiki directory" -r
