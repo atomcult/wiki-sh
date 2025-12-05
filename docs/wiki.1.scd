@@ -35,6 +35,9 @@ wiki - interrogate plaintext wiki directories
 *--grep-opts* _options_
 	Pass in options to grep
 
+*--backlinks, -b*
+	Find notes that link to the selected note
+
 *--pager, -p* _command_
 	Opens files with the specified command
 

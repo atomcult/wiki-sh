@@ -24,6 +24,7 @@ OPT_WIKI_DAILY_PATH="${WIKI_DAILY_PATH:-}"
 OPT_WIKI_DAILY=""
 OPT_WIKI_TEMPLATE_PATH="${WIKI_TEMPLATE_PATH:-}"
 OPT_WIKI_NEW_NAME=""
+OPT_WIKI_BACKLINKS=""
 
 OPT_WIKI_PRINT_FNAME=""
 OPT_WIKI_OPEN=""
@@ -66,6 +67,7 @@ OPTIONS:
   Search:
     --grep, -g QUERY         Search files for QUERY
     --grep-opts OPTS         Pass in options to grep
+    --backlinks, -b          Find notes that link to the selected note
 
   External Tools:
     --pager, -p PAGER        Open files with PAGER
@@ -227,6 +229,10 @@ parse() {
 				OPT_WIKI_GREP_OPTS="$2"
 				shift 2
 				;;
+			--backlinks|-b)
+				OPT_WIKI_BACKLINKS=1
+				shift
+				;;
 			*)
 				OPT_QUERY="${*}"
 				break
@@ -302,6 +308,17 @@ find_files() (
 	find "${OPT_WIKI_PATH}" -type f ! -path '**/.*' -prune -printf '%P\n'
 )
 
+find_backlinks() (
+	search_term="$1"
+	IFS=":"
+
+	# shellcheck disable=SC2086
+	find "${OPT_WIKI_PATH}" -type f -print0 |
+		sed -z '/\/\./d' |
+		xargs -0 grep -l ${OPT_WIKI_GREP_OPTS} "${search_term}" |
+		sed "s|${OPT_WIKI_PATH}/||"
+)
+
 run() {
 	find_files | fzf \
 		--ansi \
@@ -320,10 +337,36 @@ main() {
 	[ -z "$OPT_WIKI_OPEN" ] || {
 		"${OPT_WIKI_FILEMGR_CMD}" \
 			"${OPT_WIKI_FILEMGR_OPTS}" \
-			"${OPT_WIKI_PATH}"
+			"${OPT_WI
+			KI_PATH}"
 
 		return $EXIT_SUCCESS
 	}
+
+	if [ -n "$OPT_WIKI_BACKLINKS" ]; then
+		target_fname=$(run)
+
+		[ -z "$target_fname" ] && return $EXIT_SUCCESS
+
+		search_term=$(basename "$target_fname" .md)
+		backlinks=$(find_backlinks "$search_term")
+
+		if [ -z "$backlinks" ]; then
+			echo >&2 "No backlinks found for '${search_term}'"
+			return $EXIT_FAILURE
+		fi
+
+		selected_backlink=$(echo "$backlinks" | fzf \
+			--ansi \
+
+			--select-1 \
+			--preview="${OPT_WIKI_PREVIEW_CMD} ${OPT_WIKI_PREVIEW_OPTS} ${OPT_WIKI_PATH}/{}" \
+			--query="${OPT_QUERY:-}")
+
+		[ -z "$selected_backlink" ] && return $EXIT_SUCCESS
+
+		fname="$selected_backlink"
+	else
 
 	if [ -n "$OPT_WIKI_DAILY" ]; then
 		# Format: <year>/<month>/<date>-<weekday>.md
@@ -367,6 +410,7 @@ main() {
 		fi
 	else
 		fname="$(run)"
+	fi
 	fi
 
 	[ -n "${fname}" ] ||
