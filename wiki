@@ -161,6 +161,10 @@ parse() {
 				exit $EXIT_SUCCESS
 				;;
 			--completions)
+				if [ -z "$2" ]; then
+					echo >&2 "ERROR: --completions requires a shell argument (e.g., bash, zsh, fish)"
+					exit $EXIT_FAILURE
+				fi
 				print_completions "$2"
 				exit $EXIT_SUCCESS
 				;;
