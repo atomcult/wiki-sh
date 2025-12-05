@@ -7,6 +7,7 @@ readonly EXIT_FAILURE=1
 
 readonly ENV_OPTS="WIKI_PATH \
 									 WIKI_INBOX \
+									 WIKI_DAILY_PATH \
 									 WIKI_TEMPLATE_PATH \
 									 WIKI_PAGER_CMD \
 									 WIKI_PAGER_OPTS \
@@ -19,6 +20,8 @@ readonly ENV_OPTS="WIKI_PATH \
 OPT_WIKI_PATH="${WIKI_PATH:-}"
 
 OPT_WIKI_INBOX="${WIKI_INBOX:-}"
+OPT_WIKI_DAILY_PATH="${WIKI_DAILY_PATH:-}"
+OPT_WIKI_DAILY=""
 OPT_WIKI_TEMPLATE_PATH="${WIKI_TEMPLATE_PATH:-}"
 OPT_WIKI_NEW_NAME=""
 
@@ -56,6 +59,8 @@ OPTIONS:
     --inbox, -I PATH         Specify PATH where new entries are created
     --print, -f              Print the selected filename and exit
     --open, -o               Open the wiki directory
+    --daily, -d              Open a daily note
+    --daily-path PATH        Specify PATH for daily notes
 
   Search:
     --grep, -g QUERY         Search files for QUERY
@@ -103,6 +108,14 @@ parse() {
 				;;
 			--inbox|-I)
 				OPT_WIKI_INBOX="$2"
+				shift 2
+				;;
+			--daily|-d)
+				OPT_WIKI_DAILY=1
+				shift
+				;;
+			--daily-path)
+				OPT_WIKI_DAILY_PATH="$2"
 				shift 2
 				;;
 			--print|-f)
@@ -242,6 +255,24 @@ main() {
 
 		return $EXIT_SUCCESS
 	}
+
+	if [ -n "$OPT_WIKI_DAILY" ]; then
+		fname="$(date +%F).md"
+		wiki_root="$(echo "${OPT_WIKI_PATH}" | cut -d: -f1)"
+
+		case "${OPT_WIKI_DAILY_PATH}" in
+			/*) daily_path="${OPT_WIKI_DAILY_PATH}" ;;
+			*) daily_path="${wiki_root}/${OPT_WIKI_DAILY_PATH}" ;;
+		esac
+
+		[ -d "$daily_path" ] || mkdir -p "$daily_path"
+		cd "$daily_path"
+		[ -f "$fname" ] || true > "$fname"
+
+		# shellcheck disable=SC2086
+		"${OPT_WIKI_PAGER_CMD}" ${OPT_WIKI_PAGER_OPTS} "${fname}"
+		return $EXIT_SUCCESS
+	fi
 
 	if [ -n "$OPT_WIKI_NEW_NAME" ]; then
 		case "${OPT_WIKI_INBOX}" in
