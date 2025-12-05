@@ -46,34 +46,35 @@ print_usage() {
 USAGE: $(basename "${PROG}") [OPTIONS..] [FILENAME]
 
 OPTIONS:
-  --help, -h               Print usage
-  --version, -V            Print the version
+  General:
+    --help, -h               Print usage
+    --version, -V            Print the version
 
-  --path PATH              Specify PATH to wiki directory
+  File/Directory:
+    --path PATH              Specify PATH to wiki directory
+    --new, -n NAME           Create a new entry
+    --inbox, -I PATH         Specify PATH where new entries are created
+    --print, -f              Print the selected filename and exit
+    --open, -o               Open the wiki directory
 
-  --new, -n NAME           Create a new entry
-  --inbox, -I PATH         Specify PATH where new entries are created
-  --print, -f              Print the selected filename and exit
-  --open, -o               Open the wiki directory
+  Search:
+    --grep, -g QUERY         Search files for QUERY
+    --grep-opts OPTS         Pass in options to grep
 
-  --grep, -g QUERY         Search files for QUERY
-  --grep-opts OPTS         Pass in options to grep
-
-  --pager, -p PAGER        Open files with PAGER
-  --pager-opts OPTS        Pass in options to the pager command
-
-  --filemgr, -F FILEMGR    Open wiki directory with FILEMGR
-  --filemgr-opts OPTS      Pass in options to the file manager command
-
-  --preview, -P PREVIEW    Preview files with PREVIEW
-  --preview-opts OPTS      Pass in options to the preview command
+  External Tools:
+    --pager, -p PAGER        Open files with PAGER
+    --pager-opts OPTS        Pass in options to the pager command
+    --filemgr, -F FILEMGR    Open wiki directory with FILEMGR
+    --filemgr-opts OPTS      Pass in options to the file manager command
+    --preview, -P PREVIEW    Preview files with PREVIEW
+    --preview-opts OPTS      Pass in options to the preview command
 
 EXAMPLES:
   wiki -g "my search query"
   wiki -n "new note title"
   wiki --path /path/to/another/wiki
 
-VALUES:
+ENVIRONMENT:
 EOF
 
 	for var in $ENV_OPTS; do
