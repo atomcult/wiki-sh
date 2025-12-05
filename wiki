@@ -267,7 +267,6 @@ main() {
 
 		[ -d "$daily_path" ] || mkdir -p "$daily_path"
 		cd "$daily_path"
-		[ -f "$fname" ] || true > "$fname"
 
 		# shellcheck disable=SC2086
 		"${OPT_WIKI_PAGER_CMD}" ${OPT_WIKI_PAGER_OPTS} "${fname}"
